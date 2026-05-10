@@ -53,8 +53,30 @@ def scan_repo(path):
                 "name": file,
                 "extension": extension,
                 "size": os.path.getsize(full_path),
+                "category": categorize_file(file, extension, full_path)
             }
 
             repo_files.append(file_info)
 
     return repo_files
+
+def categorize_file(filename, extension, full_path):
+    filename = filename.lower()
+    extension = extension.lower()
+
+    if extension == ".md":
+        return "documentation"
+
+    if filename in {"package.json", "requirements.txt", "pyproject.toml"}:
+        return "dependency"
+
+    if filename in {".env", ".env.example"}:
+        return "environment"
+
+    if filename == "dockerfile" or extension in {".yml", ".yaml"}:
+        return "config"
+
+    if extension in {".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".c", ".cpp"}:
+        return "source_code"
+
+    return "unknown"
