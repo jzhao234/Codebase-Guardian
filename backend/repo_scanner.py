@@ -1,7 +1,7 @@
 import os
 
-def ignore_rules():
-    dir_list = {
+def get_ignore_rules():
+    ignored_dirs = {
         "node_modules",
         ".git",
         ".next",
@@ -10,33 +10,51 @@ def ignore_rules():
         "dist",
         "build",
     }
-    file_list = {
+    ignored_files = {
         ".DS_Store",
         "package-lock.json",
         "yarn.lock",
         "pnpm-lock.yaml",
     }
-    extension_list = {
+    ignored_extensions = {
         ".png",
         ".jpg",
         ".gif",
         ".ico",
         ".pyc",
     }
-    return dir_list, file_list, extension_list
+    return ignored_dirs, ignored_files, ignored_extensions
 
 
 def scan_repo(path): 
     repo_files = []
-    dir_list, file_list, extension_list = ignore_rules()
+    ignored_dirs, ignored_files, ignored_extensions = get_ignore_rules()
+    
     for root, dirs, files in os.walk(path, topdown=True):
-        for dir_name in dir_list:
+        for dir_name in ignored_dirs:
             if dir_name in dirs:
                 dirs.remove(dir_name)
             
         for file in files:
-            if file in file_list or file.endswith(tuple(extension_list)):
+
+            file_name, extension = os.path.splitext(file)
+
+            if file in ignored_files:
                 continue
+
+            if extension in ignored_extensions: 
+                continue
+
+
             full_path = os.path.join(root, file)
-            repo_files.append(full_path)
+
+            file_info = {
+                "path": full_path,
+                "name": file,
+                "extension": extension,
+                "size": os.path.getsize(full_path),
+            }
+
+            repo_files.append(file_info)
+
     return repo_files
