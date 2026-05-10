@@ -4,6 +4,8 @@ import repo_scanner as repo_scanner
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
 
+import auditors.resource_auditor as resource_auditor
+
 def main():
     repo_map = repo_scanner.scan_repo('.')
 
@@ -18,10 +20,16 @@ def main():
             result = readme_analyzer.analyze_readme(file_info["path"])
             readme_results.append(result)
     
+    findings = resource_auditor.audit_readme_scripts(
+        package_results,
+        readme_results
+    )
+    
     output = {
         "repo_map": repo_map,
         "package_analysis": package_results,
         "readme_analysis": readme_results,
+        "findings": findings,
     }
 
     with open("analysis_output.json", "w") as file:

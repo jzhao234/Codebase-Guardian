@@ -1,0 +1,41 @@
+{
+    "repo_map": [
+        {
+            "path": "./repo_scanner.py",
+            "name": "repo_scanner.py",
+            "extension": ".py",
+            "size": 1984,
+            "category": "source_code"
+        },
+        {
+            "path": "./main.py",
+            "name": "main.py",
+            "extension": ".py",
+            "size": 958,
+            "category": "source_code"
+        },
+        {
+            "path": "./analyzers/package_analyzer.py",
+            "name": "package_analyzer.py",
+            "extension": ".py",
+            "size": 432,
+            "category": "source_code"
+        },
+        {
+            "path": "./analyzers/readme_analyzer.py",
+            "name": "readme_analyzer.py",
+            "extension": ".py",
+            "size": 292,
+            "category": "source_code"
+        },
+        {
+            "path": "./auditors/resource.auditor.py",
+            "name": "resource.auditor.py",
+            "extension": ".py",
+            "size": 0,
+            "category": "source_code"
+        }
+    ],
+    "package_analysis": [],
+    "readme_analysis": []
+}
