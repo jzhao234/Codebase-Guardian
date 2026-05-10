@@ -1,6 +1,8 @@
 import json
+import argparse
 
-import repo_scanner as repo_scanner
+import repo_scanner
+import repo_loader
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
 import analyzers.env_analyzer as env_analyzer
@@ -9,7 +11,7 @@ import analyzers.source_env_analyzer as source_env_analyzer
 import auditors.env_auditor as env_auditor
 import auditors.resource_auditor as resource_auditor
 
-def main():
+def run_analysis(repo_path):
     repo_map = repo_scanner.scan_repo('.')
 
     findings = []
@@ -53,6 +55,16 @@ def main():
         "source_env_analysis": source_env_results,
         "findings": findings,
     }
+    
+def main():
+    parser = argparse.ArgumentParser(description="Analyze a codebase for stale resources.")
+    parser.add_argument("--repo", required=True, help="Local repo path or GitHub URL")
+    parser.add_argument("--output", default="analysis_output.json", help="Output JSON file")
+
+    args = parser.parse_args()
+
+    with repo_loader.prepare_repo(args.repo) as repo_path:
+        output = run_analysis(repo_path)
 
     with open("analysis_output.json", "w") as file:
         json.dump(output, file, indent=4)
