@@ -12,7 +12,7 @@ import auditors.env_auditor as env_auditor
 import auditors.resource_auditor as resource_auditor
 
 def run_analysis(repo_path):
-    repo_map = repo_scanner.scan_repo('.')
+    repo_map = repo_scanner.scan_repo(repo_path)
 
     findings = []
     package_results = []
@@ -56,6 +56,8 @@ def run_analysis(repo_path):
         "findings": findings,
     }
     
+    return output
+    
 def main():
     parser = argparse.ArgumentParser(description="Analyze a codebase for stale resources.")
     parser.add_argument("--repo", required=True, help="Local repo path or GitHub URL")
@@ -66,10 +68,10 @@ def main():
     with repo_loader.prepare_repo(args.repo) as repo_path:
         output = run_analysis(repo_path)
 
-    with open("analysis_output.json", "w") as file:
+    with open(args.output, "w") as file:
         json.dump(output, file, indent=4)
 
-    print("Analysis saved to analysis_output.json")
+    print(f"Analysis saved to {args.output}")
 
 if __name__ == "__main__":
     main()
