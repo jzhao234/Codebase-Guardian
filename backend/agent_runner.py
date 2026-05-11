@@ -1,7 +1,7 @@
 import repo_scanner
 import context_gatherer
 import suggestion_generator
-import backend.decision_engine as decision_engine
+import decision_engine
 import fix_applier
 import diff_generator
 import git_manager
@@ -77,6 +77,7 @@ def run_maintenance_agent(repo_path, apply_fix=False):
     agent_state["verification"] = None
     agent_state["diff"] = None
     agent_state["branch"] = None
+    agent_state["commit"] = None
 
     next_action = decision_engine.choose_next_action(agent_state["findings"])
     agent_state["decisions"].append(next_action)
@@ -120,6 +121,14 @@ def run_maintenance_agent(repo_path, apply_fix=False):
                     "remaining_findings_count": len(verification_state["findings"]),
                     "remaining_findings": verification_state["findings"],
                 }
+
+                commit_result = git_manager.commit_changes(
+                    repo_path,
+                    "Apply agent-suggested maintenance fix"
+                )
+
+                agent_state["commit"] = commit_result
+
             else:
                 agent_state["verification"] = {
                     "reran_analysis": False,
