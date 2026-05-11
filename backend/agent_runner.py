@@ -2,6 +2,7 @@ import repo_scanner
 import context_gatherer
 import suggestion_generator
 import backend.decision_engine as decision_engine
+import fix_applier
 
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
@@ -12,7 +13,7 @@ import auditors.resource_auditor as resource_auditor
 import auditors.env_auditor as env_auditor
 
 
-def run_maintenance_agent(repo_path):
+def run_maintenance_agent(repo_path, apply_fix=False):
     agent_state = {
         "repo_path": repo_path,
         "repo_map": [],
@@ -24,6 +25,8 @@ def run_maintenance_agent(repo_path):
         "decisions": [],
         "selected_context": None,
         "suggestion": None,
+        "apply_fix": apply_fix,
+        "fix_result": None,
     }
 
     repo_map = repo_scanner.scan_repo(repo_path)
@@ -75,7 +78,16 @@ def run_maintenance_agent(repo_path):
 
         agent_state["selected_context"] = selected_context
     
-    suggestion = suggestion_generator.generate_suggestion(selected_context)
-    agent_state["suggestion"] = suggestion
+        suggestion = suggestion_generator.generate_suggestion(selected_context)
+        agent_state["suggestion"] = suggestion
+
+        if apply_fix:
+            fix_result = fix_applier.apply_fix(suggestion)
+            agent_state["fix_result"] = fix_result
+        else:
+            agent_state["fix_result"] = {
+                "applied": False,
+                "reason": "apply_fix was not enabled."
+            }
 
     return agent_state

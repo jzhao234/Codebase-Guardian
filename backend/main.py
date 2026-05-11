@@ -8,11 +8,19 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze a codebase for stale resources.")
     parser.add_argument("--repo", required=True, help="Local repo path or GitHub URL")
     parser.add_argument("--output", default="analysis_output.json", help="Output JSON file")
+    parser.add_argument(
+        "--apply-fix",
+        action="store_true",
+        help="Apply the suggested fix locally"
+    )
 
     args = parser.parse_args()
 
     with repo_loader.prepare_repo(args.repo) as repo_path:
-        output = agent_runner.run_maintenance_agent(repo_path)
+        output = agent_runner.run_maintenance_agent(
+            repo_path,
+            apply_fix=args.apply_fix
+        )
 
     with open(args.output, "w") as file:
         json.dump(output, file, indent=4)
