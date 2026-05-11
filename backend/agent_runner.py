@@ -1,5 +1,6 @@
 import repo_scanner
-import decision_engine
+import context_gatherer
+import backend.decision_engine as decision_engine
 
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
@@ -20,6 +21,7 @@ def run_maintenance_agent(repo_path):
         "source_env_analysis": [],
         "findings": [],
         "decisions": [],
+        "selected_context": None,
     }
 
     repo_map = repo_scanner.scan_repo(repo_path)
@@ -60,5 +62,15 @@ def run_maintenance_agent(repo_path):
 
     next_action = decision_engine.choose_next_action(ranked_findings)
     agent_state["decisions"].append(next_action)
+
+    if next_action["action"] == "prioritize_finding":
+        selected_finding = next_action["selected_finding"]
+
+        selected_context = context_gatherer.gather_context_for_finding(
+            selected_finding,
+            agent_state
+        )
+
+        agent_state["selected_context"] = selected_context
 
     return agent_state
