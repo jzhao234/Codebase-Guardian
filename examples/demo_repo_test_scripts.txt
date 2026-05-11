@@ -1,0 +1,62 @@
+# Demo Repo Testing Script
+# Run these commands line by line from the root of your actual agent project.
+
+# 1. Confirm you are in the project root
+pwd
+ls
+
+# 2. Remove any old demo run repo and old demo outputs
+rm -rf ../demo-run-repo
+rm -f demo_analysis.json demo_fixed.json
+
+# 3. Create a fresh runnable demo repo from the committed example fixture
+cp -R examples/demo-target-repo ../demo-run-repo
+cd ../demo-run-repo
+
+# 4. Make the copied demo folder a real Git repo
+git init -b main
+git config user.email "test@example.com"
+git config user.name "Test User"
+git add .
+git commit -m "Initial demo repo"
+
+# 5. Confirm the demo repo starts with the stale README command
+cat README.md
+git status
+git log --oneline --decorate -3
+
+# 6. Go back to your actual agent project
+cd -
+
+# 7. Run analysis mode first — this should NOT edit the demo repo
+python main.py --repo ../demo-run-repo --output demo_analysis.json
+
+# 8. Inspect the analysis output
+cat demo_analysis.json
+
+# 9. Confirm README was not changed yet
+cat ../demo-run-repo/README.md
+
+# 10. Run apply-fix mode — this should create a branch, edit README, verify, and commit
+python main.py --repo ../demo-run-repo --output demo_fixed.json --apply-fix
+
+# 11. Inspect the fixed output report
+cat demo_fixed.json
+
+# 12. Confirm README changed from npm run serve to npm run dev
+cat ../demo-run-repo/README.md
+
+# 13. Inspect Git state in the demo repo
+cd ../demo-run-repo
+git branch
+git status
+git log --oneline --decorate -5
+
+# 14. Optional: see the committed change compared to main
+git show --stat
+git show --patch --color
+
+# 15. Optional cleanup: return to project and remove generated demo files
+cd -
+# rm -rf ../demo-run-repo
+# rm -f demo_analysis.json demo_fixed.json
