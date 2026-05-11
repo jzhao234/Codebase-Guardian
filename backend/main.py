@@ -14,13 +14,19 @@ def main():
         action="store_true",
         help="Apply the suggested fix locally"
     )
+    parser.add_argument(
+        "--use-llm",
+        action="store_true",
+        help="Use LLM to generate fix suggestions"
+    )
 
     args = parser.parse_args()
 
     with repo_loader.prepare_repo(args.repo) as repo_path:
         output = run_agent_loop(
             repo_path,
-            apply_fix=args.apply_fix
+            apply_fix=args.apply_fix,
+            use_llm=args.use_llm
         )
 
     with open(args.output, "w", encoding="utf-8") as file:

@@ -5,6 +5,7 @@ import suggestion_generator
 
 from agent_core.agent_trace import add_trace
 from agents import fix_agent
+from llm.llm_suggestion_generator import generate_llm_suggestion
 
 
 def run_action(state, action):
@@ -60,9 +61,20 @@ def run_action(state, action):
         return
 
     if action_name == "generate_suggestion":
-        suggestion = suggestion_generator.generate_suggestion(
-            state["selected_context"]
-        )
+        if state.get("use_llm"):
+            suggestion = generate_llm_suggestion(
+                state["selected_context"]
+            )
+
+            if suggestion.get("error"):
+                suggestion = suggestion_generator.generate_suggestion(
+                    state["selected_context"]
+                )
+                suggestion["llm_fallback_reason"] = "LLM suggestion failed, so rule-based suggestion was used."
+        else:
+            suggestion = suggestion_generator.generate_suggestion(
+                state["selected_context"]
+            )
 
         state["suggestion"] = suggestion
 

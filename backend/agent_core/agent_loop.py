@@ -7,8 +7,8 @@ from agent_core.agent_trace import add_trace
 MAX_STEPS = 10
 
 
-def run_agent_loop(repo_path, apply_fix=False):
-    state = create_initial_state(repo_path, apply_fix)
+def run_agent_loop(repo_path, apply_fix=False, use_llm=False):
+    state = create_initial_state(repo_path, apply_fix, use_llm)
 
     for _ in range(MAX_STEPS):
         if state["done"]:
