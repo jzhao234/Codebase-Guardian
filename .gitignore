@@ -7,11 +7,19 @@ __pycache__/
 venv/
 .venv/
 
+# Environment variables / secrets
+.env
+backend/.env
+
 # Generated reports
 analysis_output.json
 fixed_output.json
 test_output.json
 github_output.json
+demo_analysis.json
+demo_fixed.json
+loop_analysis.json
+loop_fixed.json
 *.log
 
 # Local cloned repos
