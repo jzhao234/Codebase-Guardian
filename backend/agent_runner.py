@@ -1,4 +1,5 @@
 import repo_scanner
+import decision_engine
 
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
@@ -50,21 +51,14 @@ def run_maintenance_agent(repo_path):
         agent_state["env_analysis"],
         agent_state["source_env_analysis"]
     )
-
+    
     agent_state["findings"].extend(readme_findings)
     agent_state["findings"].extend(env_findings)
 
-    if agent_state["findings"]:
-        agent_state["decisions"].append({
-            "decision": "report_findings",
-            "reason": "The agent found stale or inconsistent project resources.",
-            "finding_count": len(agent_state["findings"])
-        })
-    else:
-        agent_state["decisions"].append({
-            "decision": "no_action_needed",
-            "reason": "No issues were found by the current checks.",
-            "finding_count": 0
-        })
+    ranked_findings = decision_engine.rank_findings(agent_state["findings"])
+    agent_state["findings"] = ranked_findings
+
+    next_action = decision_engine.choose_next_action(ranked_findings)
+    agent_state["decisions"].append(next_action)
 
     return agent_state
