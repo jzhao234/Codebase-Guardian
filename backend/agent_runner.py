@@ -82,64 +82,79 @@ def run_maintenance_agent(repo_path, apply_fix=False):
     next_action = decision_engine.choose_next_action(agent_state["findings"])
     agent_state["decisions"].append(next_action)
 
-    if next_action["action"] == "prioritize_finding":
-        selected_finding = next_action["selected_finding"]
+    if next_action["action"] != "prioritize_finding":
+        agent_state["fix_result"] = {
+            "applied": False,
+            "reason": "No prioritized finding was selected, so there was no fix to apply."
+        }
+        return agent_state
 
-        selected_context = context_gatherer.gather_context_for_finding(
-            selected_finding,
-            agent_state
-        )
+    selected_finding = next_action["selected_finding"]
 
-        agent_state["selected_context"] = selected_context
-    
-        suggestion = suggestion_generator.generate_suggestion(selected_context)
-        agent_state["suggestion"] = suggestion
+    selected_context = context_gatherer.gather_context_for_finding(
+        selected_finding,
+        agent_state
+    )
 
-        if apply_fix:
-            branch_result = git_manager.create_fix_branch(repo_path)
-            agent_state["branch"] = branch_result
+    agent_state["selected_context"] = selected_context
 
-            if not branch_result["success"]:
-                agent_state["fix_result"] = {
-                    "applied": False,
-                    "reason": "Could not create fix branch.",
-                    "error": branch_result["error"]
-                }
-                return agent_state
-            
-            fix_result = fix_applier.apply_fix(suggestion)
-            agent_state["fix_result"] = fix_result
+    suggestion = suggestion_generator.generate_suggestion(selected_context)
+    agent_state["suggestion"] = suggestion
 
-            if fix_result.get("applied"):
-                diff_result = diff_generator.generate_git_diff(repo_path)
-                agent_state["diff"] = diff_result
+    if apply_fix:
+        branch_result = git_manager.create_fix_branch(repo_path)
+        agent_state["branch"] = branch_result
 
-                verification_state = run_analysis_pass(repo_path)
+        if not branch_result["success"]:
+            agent_state["fix_result"] = {
+                "applied": False,
+                "reason": "Could not create fix branch.",
+                "error": branch_result["error"]
+            }
+            return agent_state
+        
+        fix_result = fix_applier.apply_fix(suggestion)
+        agent_state["fix_result"] = fix_result
 
-                agent_state["verification"] = {
-                    "reran_analysis": True,
-                    "remaining_findings_count": len(verification_state["findings"]),
-                    "remaining_findings": verification_state["findings"],
-                }
+        if fix_result.get("applied"):
+            diff_result = diff_generator.generate_git_diff(repo_path)
+            agent_state["diff"] = diff_result
 
+            verification_state = run_analysis_pass(repo_path)
+
+            remaining_findings = verification_state["findings"]
+
+            agent_state["verification"] = {
+                "reran_analysis": True,
+                "remaining_findings_count": len(remaining_findings),
+                "remaining_findings": remaining_findings,
+            }
+
+            if len(remaining_findings) == 0:
                 commit_result = git_manager.commit_changes(
                     repo_path,
                     "Apply agent-suggested maintenance fix"
                 )
 
                 agent_state["commit"] = commit_result
-
             else:
-                agent_state["verification"] = {
-                    "reran_analysis": False,
-                    "reason": "Fix was not applied, so verification was skipped."
+                agent_state["commit"] = {
+                    "success": False,
+                    "committed": False,
+                    "error": "Fix was applied, but verification still found issues. Commit skipped."
                 }
 
         else:
-            agent_state["fix_result"] = {
-                "applied": False,
-                "reason": "apply_fix was not enabled."
+            agent_state["verification"] = {
+                "reran_analysis": False,
+                "reason": "Fix was not applied, so verification was skipped."
             }
+
+    else:
+        agent_state["fix_result"] = {
+            "applied": False,
+            "reason": "apply_fix was not enabled."
+        }
 
 
     return agent_state
