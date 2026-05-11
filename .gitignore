@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+venv/
+.venv/
+
+# Generated reports
+analysis_output.json
+fixed_output.json
+test_output.json
+github_output.json
+*.log
+
+# Local cloned repos
+.workspaces/
+
+# Mac
+.DS_Store
