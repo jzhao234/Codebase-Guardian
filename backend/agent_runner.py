@@ -1,5 +1,6 @@
 import repo_scanner
 import context_gatherer
+import suggestion_generator
 import backend.decision_engine as decision_engine
 
 import analyzers.package_analyzer as package_analyzer
@@ -22,6 +23,7 @@ def run_maintenance_agent(repo_path):
         "findings": [],
         "decisions": [],
         "selected_context": None,
+        "suggestion": None,
     }
 
     repo_map = repo_scanner.scan_repo(repo_path)
@@ -72,5 +74,8 @@ def run_maintenance_agent(repo_path):
         )
 
         agent_state["selected_context"] = selected_context
+    
+    suggestion = suggestion_generator.generate_suggestion(selected_context)
+    agent_state["suggestion"] = suggestion
 
     return agent_state
