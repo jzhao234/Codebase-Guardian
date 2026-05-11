@@ -12,24 +12,19 @@ import analyzers.source_env_analyzer as source_env_analyzer
 import auditors.resource_auditor as resource_auditor
 import auditors.env_auditor as env_auditor
 
-
-def run_maintenance_agent(repo_path, apply_fix=False):
+def run_analysis_pass(repo_path):
     agent_state = {
         "repo_path": repo_path,
         "repo_map": [],
-        "package_analysis": [],
-        "readme_analysis": [],
+        "package_analysis": [], 
+        "readme_analysis": [], 
         "env_analysis": [],
         "source_env_analysis": [],
         "findings": [],
-        "decisions": [],
-        "selected_context": None,
-        "suggestion": None,
-        "apply_fix": apply_fix,
-        "fix_result": None,
     }
 
     repo_map = repo_scanner.scan_repo(repo_path)
+
     agent_state["repo_map"] = repo_map
 
     for file_info in repo_map:
@@ -65,6 +60,20 @@ def run_maintenance_agent(repo_path, apply_fix=False):
     ranked_findings = decision_engine.rank_findings(agent_state["findings"])
     agent_state["findings"] = ranked_findings
 
+    return agent_state
+
+
+def run_maintenance_agent(repo_path, apply_fix=False):
+
+    agent_state = run_analysis_pass(repo_path)
+
+    agent_state["decisions"] = []
+    agent_state["selected_context"] = None
+    agent_state["suggestion"] = None
+    agent_state["apply_fix"] = apply_fix
+    agent_state["fix_result"] = None
+    agent_state["verification"] = None
+
     next_action = decision_engine.choose_next_action(ranked_findings)
     agent_state["decisions"].append(next_action)
 
@@ -84,10 +93,26 @@ def run_maintenance_agent(repo_path, apply_fix=False):
         if apply_fix:
             fix_result = fix_applier.apply_fix(suggestion)
             agent_state["fix_result"] = fix_result
+
+            if fix_result.get("applied"):
+                verification_state = run_analysis_pass(repo_path)
+
+                agent_state["verification"] = {
+                    "reran_analysis": True,
+                    "remaining_findings_count": len(verification_state["findings"]),
+                    "remaining_findings": verification_state["findings"],
+                }
+            else:
+                agent_state["verification"] = {
+                    "reran_analysis": False,
+                    "reason": "Fix was not applied, so verification was skipped."
+                }
+
         else:
             agent_state["fix_result"] = {
                 "applied": False,
                 "reason": "apply_fix was not enabled."
             }
+
 
     return agent_state
