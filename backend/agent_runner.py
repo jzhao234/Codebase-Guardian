@@ -97,6 +97,9 @@ def run_maintenance_agent(repo_path, apply_fix=False):
             agent_state["fix_result"] = fix_result
 
             if fix_result.get("applied"):
+                diff_result = diff_generator.generate_git_diff(repo_path)
+                agent_state["diff"] = diff_result
+
                 verification_state = run_analysis_pass(repo_path)
 
                 agent_state["verification"] = {
