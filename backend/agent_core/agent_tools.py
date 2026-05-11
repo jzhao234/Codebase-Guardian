@@ -1,4 +1,4 @@
-import agent_runner
+from agents import resource_auditor_agent
 import decision_engine
 import context_gatherer
 import suggestion_generator
@@ -11,7 +11,7 @@ def run_action(state, action):
     action_name = action["action"]
 
     if action_name == "run_analysis":
-        analysis = agent_runner.run_analysis_pass(state["repo_path"])
+        analysis = resource_auditor_agent.run_resource_audit(state["repo_path"])
 
         state["analysis"] = analysis
         state["repo_map"] = analysis["repo_map"]
@@ -78,7 +78,7 @@ def run_action(state, action):
             state["repo_path"],
             state["suggestion"],
             state["selected_finding"],
-            agent_runner.run_analysis_pass
+            resource_auditor_agent.run_resource_audit
         )
 
         state["branch"] = fix_state["branch"]
