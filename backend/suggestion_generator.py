@@ -45,7 +45,10 @@ def suggest_readme_command_fix(selected_context):
             "suggested_action": "update_readme_command",
             "confidence": "medium",
             "finding": finding,
-            "suggested_fix": f"Replace the stale README command with '{suggested_replacement}'.",
+            "file_to_edit": finding["file"],
+            "old_text": finding["old_text"],
+            "new_text": suggested_replacement,
+            "suggested_fix": f"Replace '{finding['old_text']}' with '{suggested_replacement}'.",
             "reason": "The README references an npm script that does not exist in package.json, but package.json contains a likely replacement script.",
             "available_scripts": sorted(available_scripts),
         }
