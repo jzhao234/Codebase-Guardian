@@ -1,8 +1,7 @@
 import json
 import subprocess
 
-import agent_runner
-
+from agent_core.agent_loop import run_agent_loop
 
 def setup_git_repo(repo_path):
     subprocess.run(["git", "init"], cwd=repo_path, check=True)
@@ -45,7 +44,7 @@ def test_agent_applies_readme_fix_and_verifies(tmp_path):
     setup_git_repo(tmp_path)
     commit_initial_state(tmp_path)
 
-    result = agent_runner.run_maintenance_agent(
+    result = run_agent_loop(
         str(tmp_path),
         apply_fix=True
     )
