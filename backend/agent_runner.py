@@ -3,6 +3,7 @@ import context_gatherer
 import suggestion_generator
 import backend.decision_engine as decision_engine
 import fix_applier
+import diff_generator
 
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
@@ -73,8 +74,9 @@ def run_maintenance_agent(repo_path, apply_fix=False):
     agent_state["apply_fix"] = apply_fix
     agent_state["fix_result"] = None
     agent_state["verification"] = None
+    agent_state["diff"] = None
 
-    next_action = decision_engine.choose_next_action(ranked_findings)
+    next_action = decision_engine.choose_next_action(agent_state["findings"])
     agent_state["decisions"].append(next_action)
 
     if next_action["action"] == "prioritize_finding":
