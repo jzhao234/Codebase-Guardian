@@ -4,6 +4,7 @@ import suggestion_generator
 import backend.decision_engine as decision_engine
 import fix_applier
 import diff_generator
+import git_manager
 
 import analyzers.package_analyzer as package_analyzer
 import analyzers.readme_analyzer as readme_analyzer
@@ -75,6 +76,7 @@ def run_maintenance_agent(repo_path, apply_fix=False):
     agent_state["fix_result"] = None
     agent_state["verification"] = None
     agent_state["diff"] = None
+    agent_state["branch"] = None
 
     next_action = decision_engine.choose_next_action(agent_state["findings"])
     agent_state["decisions"].append(next_action)
@@ -93,6 +95,17 @@ def run_maintenance_agent(repo_path, apply_fix=False):
         agent_state["suggestion"] = suggestion
 
         if apply_fix:
+            branch_result = git_manager.create_fix_branch(repo_path)
+            agent_state["branch"] = branch_result
+
+            if not branch_result["success"]:
+                agent_state["fix_result"] = {
+                    "applied": False,
+                    "reason": "Could not create fix branch.",
+                    "error": branch_result["error"]
+                }
+                return agent_state
+            
             fix_result = fix_applier.apply_fix(suggestion)
             agent_state["fix_result"] = fix_result
 
