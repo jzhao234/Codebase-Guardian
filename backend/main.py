@@ -19,6 +19,11 @@ def main():
         action="store_true",
         help="Use LLM to generate fix suggestions"
     )
+    parser.add_argument(
+        "--use_llm_planner",
+        action="stroe_true",
+        help="Use LLM to choose the agent's next action"
+    )
 
     args = parser.parse_args()
 
@@ -26,7 +31,8 @@ def main():
         output = run_agent_loop(
             repo_path,
             apply_fix=args.apply_fix,
-            use_llm=args.use_llm
+            use_llm=args.use_llm, 
+            use_llm_planner=args.use_llm_planner,
         )
 
     with open(args.output, "w", encoding="utf-8") as file:

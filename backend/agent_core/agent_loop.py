@@ -7,8 +7,8 @@ from agent_core.agent_trace import add_trace
 MAX_STEPS = 10
 
 
-def run_agent_loop(repo_path, apply_fix=False, use_llm=False):
-    state = create_initial_state(repo_path, apply_fix, use_llm)
+def run_agent_loop(repo_path, apply_fix=False, use_llm=False, use_llm_planner=False):
+    state = create_initial_state(repo_path, apply_fix, use_llm, use_llm_planner=False)
 
     for _ in range(MAX_STEPS):
         if state["done"]:
@@ -16,10 +16,18 @@ def run_agent_loop(repo_path, apply_fix=False, use_llm=False):
 
         next_action = choose_next_action(state)
 
+        planner_action_name = "choose_next_action"
+
+        if next_action.get("used_llm_planner"):
+            planner_action_name = "choose_next_action_llm"
+
         add_trace(
             state,
-            "choose_next_action",
-            next_action["reason"]
+            planner_action_name,
+            next_action["reason"],
+            metadata={
+                "chosen_action": next_action["action"]
+            }
         )
 
         run_action(state, next_action)

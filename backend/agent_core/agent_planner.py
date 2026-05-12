@@ -1,4 +1,7 @@
-def choose_next_action(state):
+from llm.llm_planner import choose_next_action_with_llm
+
+
+def choose_next_action_rule_based(state):
     if state["analysis"] is None:
         return {
             "action": "run_analysis",
@@ -45,3 +48,17 @@ def choose_next_action(state):
         "action": "finish",
         "reason": "The agent has completed the available workflow."
     }
+
+
+def choose_next_action(state):
+    if state.get("use_llm_planner"):
+        llm_decision = choose_next_action_with_llm(state)
+
+        if not llm_decision.get("error"):
+            return llm_decision
+
+        fallback_decision = choose_next_action_rule_based(state)
+        fallback_decision["llm_planner_fallback_reason"] = llm_decision.get("reason")
+        return fallback_decision
+
+    return choose_next_action_rule_based(state)

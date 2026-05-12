@@ -1,8 +1,9 @@
-def create_initial_state(repo_path, apply_fix=False, use_llm=False):
+def create_initial_state(repo_path, apply_fix=False, use_llm=False, use_llm_planner=False):
     return {
         "goal": "Find and safely fix repo maintenance issues.",
 
         "use_llm": use_llm,
+        "use_llm_planner": use_llm_planner,
 
         "repo_path": repo_path,
         "apply_fix": apply_fix,
